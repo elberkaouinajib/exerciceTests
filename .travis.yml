@@ -6,5 +6,7 @@ before_install: # if "install" is overridden
   - echo "deb http://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
   - sudo apt-get update -qq
   - sudo apt-get install -y -qq yarn
+  - npm install -g yarn@v0.22.0
+  - yarn install
 cache:
   yarn: true
