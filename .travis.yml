@@ -7,6 +7,7 @@ before_install: # if "install" is overridden
   - sudo apt-get update -qq
   - sudo apt-get install -y -qq yarn
   - npm install -g yarn@v0.22.0
-  - yarn install
+install:
+  - yarn
 cache:
   yarn: true
