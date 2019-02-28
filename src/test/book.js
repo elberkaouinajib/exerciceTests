@@ -5,6 +5,7 @@ import chaiAsPromised from 'chai-as-promised';
 import path from 'path';
 import nock from 'nock';
 
+
 import server from '../server';
 import resetDatabase from '../utils/resetDatabase';
 
@@ -16,34 +17,30 @@ chai.use(chaiAsPromised);
 
 // fait les Tests d'integration en premier
 
-  it('Premiere serie de test (Empty Database)', () => {
-    let emptyBooks = {
-        books : [{"id":"0db0b43e-dddb-47ad-9b4a-e5fe9ec7c2a9","title":"Coco raconte Channel 2","years":1990,"pages":400}]
-    }
-
-    beforeEach((done) => {
-        resetDatabase(path.join(__dirname, '../data/books.json'),emptyBooks);
-        done();
-    });
-
-    describe('Books GET', () => {
-      describe('/GET book', () => {
-          it('it should GET all the books', (done) => {
+  describe('Premiere serie de test (Empty Database)', () => {
+    describe('GET books', () => {
+        let emptyBooks = {
+          books :[]
+           }
+         beforeEach((done) => {
+         resetDatabase(path.join(__dirname, '../data/books.json'), emptyBooks);
+         done();
+        });
+         it('it should GET all the books', (done) => {
             chai.request(server)
                 .get('/book')
                 .end((err, res) => {
-                    expect(err).to.be.null;
                     expect(res.body.books).to.be.a('array');
+                    expect(res.body.books.length).equal(0);
                     expect(res).to.have.status(200);
-                  done();
-                });
-          });
-      });
-    
-    });
+                    done();
+               });
+        });
+   });
+        
 
+   
     describe('Books POST', () => {
-        describe('/POST book', () => {
             it('it should add the book', (done) => {
                 chai.request(server)
                 .post('/book')
@@ -56,47 +53,69 @@ chai.use(chaiAsPromised);
                 });
             });
         });
-      
-      });
-
-      describe('Books PUT', () => {
-        describe('/PUT book', () => {
-            it('it should add the book', (done) => {
+      });   
+ describe('Seconde serie de test (Mocked Database)', () => {
+     
+        describe('PUT book', () => {
+          let dataBooks = {
+            books :[{"id":"0db0b43e-dddb-47ad-9b4a-e5fe9ec7c2a9","title":"Coco raconte Channel 2","years":1990,"pages":400}]
+             }
+           beforeEach((done) => {
+           resetDatabase(path.join(__dirname, '../data/books.json'), dataBooks);
+           done();
+          });
+            it('it should put the book', (done) => {
                 chai.request(server)
                 .put('/book/0db0b43e-dddb-47ad-9b4a-e5fe9ec7c2a9')
                 .send({"title":"Modded things","years":1990,"pages":400})
                 .end(function (err, res) {
-                   expect(err).to.be.null;
                    expect(res).to.have.status(200);
                    expect(res.body.message).to.equal('book successfully updated');
                    done();
                 });
             });
         });    
-      });
+      
 
       describe('Books DELETE', () => {
-        describe('/DELETE book', () => {
-            it('it should add the book', (done) => {
+        
+        
+            it('it should delete the book', (done) => {
                 chai.request(server)
                 .del('/book/0db0b43e-dddb-47ad-9b4a-e5fe9ec7c2a9')
                 .end(function (err, res) {
-                   expect(err).to.be.null;
                    expect(res).to.have.status(200);
                    expect(res.body.message).to.equal('book successfully deleted');
+
                    done();
                 });
             });
-        });    
+          });
+      
+        describe('Books GET id', () => {
+          it('it should GET the books by id', (done) => {
+            chai.request(server)
+                .get('/book/0db0b43e-dddb-47ad-9b4a-e5fe9ec7c2a9')
+                .end((err, res) => {
+                    expect(res).to.have.status(200);
+                    expect(res).to.be.json;
+                    expect(res.body.message).to.equal('book fetched');
+                    expect(res.body.book.title).to.be.a('string');
+                    
+
+                    done();
+                });
+          });
+       });   
+ 
       });
-
-  })
-
+   
 
   it('Premiere serie de test (simulation de réponse ok)', () => {
     let emptyBooks = {
-        books : [{"id":"0db0b43e-dddb-47ad-9b4a-e5fe9ec7c2a9","title":"Coco raconte Channel 2","years":1990,"pages":400}]
+        books : []
     }
+   
 
     beforeEach((done) => {
         resetDatabase(path.join(__dirname, '../data/books.json'),emptyBooks);
@@ -145,7 +164,7 @@ chai.use(chaiAsPromised);
         })
       });
 
-    describe('Books POST', () => {
+    
         describe('/POST book', () => {
             it("returns a successful mocked response", function (done) {
           
@@ -166,10 +185,9 @@ chai.use(chaiAsPromised);
             });
         });
       
-      });
+    
 
       describe('Books PUT', () => {
-        describe('/PUT book', () => {
             it("returns a successful mocked response", function (done) {
           
                 nock("http://myApi.com")
@@ -186,11 +204,11 @@ chai.use(chaiAsPromised);
                    done();
                 });
             });
-        });    
+            
       });
 
       describe('Books DELETE', () => {
-        describe('/DELETE book', () => {
+        
             it("returns a successful mocked response", function (done) {
           
                 nock("http://myApi.com")
@@ -208,19 +226,20 @@ chai.use(chaiAsPromised);
                 });
             });
         });    
-      });
+    
 
   })
 
   it('Seconde série de test (simulation de mauvaise réponse)', () => {
     
-    let emptyBooks = {
+    let dataBooks = {
         books : [{"id":"0db0b43e-dddb-47ad-9b4a-e5fe9ec7c2a9","title":"Coco raconte Channel 2","years":1990,"pages":400}]
     }
 
     beforeEach((done) => {
-        resetDatabase(path.join(__dirname, '../data/books.json'),emptyBooks);
+        resetDatabase(path.join(__dirname, '../data/books.json'),dataBooks);
         done();
+        console.log(dataBooks);
     });
 
     describe("Books GET", function () {
@@ -304,8 +323,7 @@ chai.use(chaiAsPromised);
 
       describe('Books DELETE', () => {
         describe('/DELETE book', () => {
-            it("returns a successful mocked response", function (done) {
-          
+            it("returns a successful mocked response", function (done) {    
                 nock("http://myApi.com")
                   .delete('/book/0db0b43e-dddb-47ad-9b4a-e5fe9ec7c2a9')
                   .reply(400, {
@@ -321,5 +339,4 @@ chai.use(chaiAsPromised);
             });
         });    
       });
-
   })
